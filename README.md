@@ -1,7 +1,9 @@
 # EASE recommender
 
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/190503375/collaborative-filtering-on-million-song)](https://paperswithcode.com/sota/collaborative-filtering-on-million-song?p=190503375)
+
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/190503375/collaborative-filtering-on-netflix)](https://paperswithcode.com/sota/collaborative-filtering-on-netflix?p=190503375)
+
 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/190503375/collaborative-filtering-on-movielens-20m)](https://paperswithcode.com/sota/collaborative-filtering-on-movielens-20m?p=190503375)
 
 This is a repository for a model from 
