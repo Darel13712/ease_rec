@@ -9,8 +9,8 @@ class EASE:
         self.item_enc = LabelEncoder()
 
     def _get_users_and_items(self, df):
-        users = self.user_enc.fit_transform(df.loc[:, 'user_id']).to_numpy()
-        items = self.item_enc.fit_transform(df.loc[:, 'item_id']).to_numpy()
+        users = self.user_enc.fit_transform(df.loc[:, 'user_id'])
+        items = self.item_enc.fit_transform(df.loc[:, 'item_id'])
         return users, items
 
     def fit(self, df, lambda_: float = 0.5, implicit=True):
@@ -22,7 +22,7 @@ class EASE:
         users, items = self._get_users_and_items(df)
         values = np.ones(df.shape[0]) if implicit else df['rating'].to_numpy() / df['rating'].max()
 
-        X = csr_matrix(values, (users, items))
+        X = csr_matrix((values, (users, items)))
         self.X = X
 
         G = X.T.dot(X).toarray()
@@ -36,7 +36,7 @@ class EASE:
 
     def predict(self, df):
         users, items = self._get_users_and_items(df)
-        return [self.X[u, :].dot(self.B[:, i]) for u,i in zip(users, items)]
+        return [self.X[u, :].dot(self.B[:, i])[0] for u,i in zip(users, items)]
 
 
 
