@@ -34,17 +34,23 @@ class EASE:
         B[diagIndices] = 0
 
         self.B = B
+        self.pred = X.dot(B)
 
-    def predict(self, users, items, k):
+    def predict(self, users, items, k, train=None):
         df = pd.DataFrame()
         users = self.user_enc.transform(users)
         items = self.item_enc.transform(items)
         for user in users:
-            pred = [self.X[user, :].dot(self.B[:, i])[0] for i in items]
+            if train is None:
+                watched = []
+            else:
+                watched = set(train.loc[train['user_id'] == user, 'item_id'])
+            candidates = [item for item in items if item not in watched]
+            pred = np.take(self.pred[user, :], candidates)
             res = np.argsort(pred)[::-1][:k]
             r = pd.DataFrame({
                 "user_id": self.user_enc.inverse_transform([user] * len(res)),
-                "item_id": self.item_enc.inverse_transform(items[res]),
+                "item_id": self.item_enc.inverse_transform(np.take(candidates, res)),
                 "score": np.take(pred, res)
             })
             df = df.append(r, ignore_index=True)
