@@ -18,4 +18,4 @@ Similiarity matrix is calculated on CPU with numpy.
 It may also use ratings from column `rating` if `implicit` parameter is set to `False`.
 
 ### Output
-List of ratings
+`pandas.DataFrame` with columns `user_id, item_id, score`
