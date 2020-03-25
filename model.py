@@ -1,5 +1,6 @@
 from scipy.sparse import csr_matrix
 import numpy as np
+import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
 
@@ -34,10 +35,17 @@ class EASE:
 
         self.B = B
 
-    def predict(self, df):
-        users, items = self._get_users_and_items(df)
-        return [self.X[u, :].dot(self.B[:, i])[0] for u,i in zip(users, items)]
-
-
-
-
+    def predict(self, users, items, k):
+        df = pd.DataFrame()
+        users = self.user_enc.transform(users)
+        items = self.item_enc.transform(items)
+        for user in users:
+            pred = [self.X[user, :].dot(self.B[:, i])[0] for i in items]
+            res = np.argsort(pred)[::-1][:k]
+            r = pd.DataFrame({
+                "user_id": self.user_enc.inverse_transform([user] * len(res)),
+                "item_id": self.item_enc.inverse_transform(items[res]),
+                "score": np.take(pred, res)
+            })
+            df = df.append(r, ignore_index=True)
+        return df
