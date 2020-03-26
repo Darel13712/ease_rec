@@ -2,6 +2,7 @@ from scipy.sparse import csr_matrix
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
+from tqdm import tqdm
 
 
 class EASE:
@@ -36,22 +37,24 @@ class EASE:
         self.B = B
         self.pred = X.dot(B)
 
-    def predict(self, users, items, k, train=None):
+    def predict(self, train, users, items, k):
         df = pd.DataFrame()
-        users = self.user_enc.transform(users)
         items = self.item_enc.transform(items)
-        for user in users:
-            if train is None:
-                watched = []
-            else:
-                watched = set(train.loc[train['user_id'] == user, 'item_id'])
+        dd = train.loc[train.user_id.isin(users)]
+        dd['ci'] = self.item_enc.transform(dd.item_id)
+        dd['cu'] = self.user_enc.transform(dd.user_id)
+        g = dd.groupby('user_id')
+        for user, group in tqdm(g):
+            watched = set(group['ci'])
             candidates = [item for item in items if item not in watched]
-            pred = np.take(self.pred[user, :], candidates)
-            res = np.argsort(pred)[::-1][:k]
+            u = group['cu'].iloc[0]
+            pred = np.take(self.pred[u, :], candidates)
+            res = np.argpartition(pred, -k)[-k:]
             r = pd.DataFrame({
-                "user_id": self.user_enc.inverse_transform([user] * len(res)),
-                "item_id": self.item_enc.inverse_transform(np.take(candidates, res)),
+                "user_id": [user] * len(res),
+                "item_id": np.take(candidates, res),
                 "score": np.take(pred, res)
-            })
+            }).sort_values('score', ascending=False)
             df = df.append(r, ignore_index=True)
+        df['item_id'] = self.item_enc.inverse_transform(df['item_id'])
         return df
